@@ -1,1 +1,105 @@
+# Interactive PowerShell Script for Azure Key Vault Management
+
+# Set Colors for Output
+$infoColor = "Cyan"
+$errorColor = "Red"
+$successColor = "Green"
+$defaultColor = "White"
+
+# Function to Set Console Color
+function Set-ConsoleColor {
+    param ([string]$Color)
+    Write-Host "" -ForegroundColor $Color -NoNewline
+}
+
+# Welcome Message
+Set-ConsoleColor $infoColor
+Write-Host "Welcome to the Azure Key Vault Management Script" -ForegroundColor $infoColor
+Set-ConsoleColor $defaultColor
+
+# Check if the Azure CLI is Logged In
+Set-ConsoleColor $infoColor
+Write-Host "Checking Azure login status..."
+Set-ConsoleColor $defaultColor
+if (-not (az account show -o none 2>$null)) {
+    Set-ConsoleColor $errorColor
+    Write-Host "You are not logged into Azure. Please log in using 'az login'."
+    exit
+}
+
+# Select Subscription
+Set-ConsoleColor $infoColor
+Write-Host "Fetching Azure Subscriptions..."
+Set-ConsoleColor $defaultColor
+$subscriptions = az account list --query "[].{Name:name, Id:id}" -o table
+Write-Host $subscriptions
+$subscriptionId = Read-Host "Enter the Subscription ID to use"
+az account set --subscription $subscriptionId
+
+# Get Resource Group Information
+$resourceGroupName = Read-Host "Enter Resource Group Name (leave blank to create a new one)"
+if ([string]::IsNullOrEmpty($resourceGroupName)) {
+    Set-ConsoleColor $infoColor
+    Write-Host "Creating a new Resource Group..." -ForegroundColor $infoColor
+    Set-ConsoleColor $defaultColor
+    $resourceGroupName = Read-Host "Enter New Resource Group Name"
+    $location = Read-Host "Enter Azure Location (e.g., eastus)"
+    az group create --name $resourceGroupName --location $location
+    Set-ConsoleColor $successColor
+    Write-Host "Resource Group '$resourceGroupName' created successfully."
+    Set-ConsoleColor $defaultColor
+} else {
+    Write-Host "Using existing Resource Group: $resourceGroupName"
+}
+
+# Create or Select Key Vault
+$vaultName = Read-Host "Enter Key Vault Name (leave blank to create a new one)"
+if ([string]::IsNullOrEmpty($vaultName)) {
+    $vaultName = Read-Host "Enter New Key Vault Name"
+    az keyvault create --name $vaultName --resource-group $resourceGroupName --location $location
+    Set-ConsoleColor $successColor
+    Write-Host "Key Vault '$vaultName' created successfully."
+    Set-ConsoleColor $defaultColor
+} else {
+    Write-Host "Using existing Key Vault: $vaultName"
+}
+
+# Secret Management
+Write-Host "`n--- Secret Management ---"
+$manageSecret = Read-Host "Do you want to add a new secret? (yes/no)"
+if ($manageSecret -eq "yes") {
+    $secretName = Read-Host "Enter Secret Name"
+    $secretValue = Read-Host "Enter Secret Value"
+    az keyvault secret set --vault-name $vaultName --name $secretName --value $secretValue
+    Set-ConsoleColor $successColor
+    Write-Host "Secret '$secretName' added to Key Vault."
+    Set-ConsoleColor $defaultColor
+}
+
+# Key Management
+Write-Host "`n--- Key Management ---"
+$manageKey = Read-Host "Do you want to create a new key? (yes/no)"
+if ($manageKey -eq "yes") {
+    $keyName = Read-Host "Enter Key Name"
+    az keyvault key create --vault-name $vaultName --name $keyName --protection software
+    Set-ConsoleColor $successColor
+    Write-Host "Key '$keyName' created in Key Vault."
+    Set-ConsoleColor $defaultColor
+}
+
+# Certificate Management
+Write-Host "`n--- Certificate Management ---"
+$manageCertificate = Read-Host "Do you want to create a new certificate? (yes/no)"
+if ($manageCertificate -eq "yes") {
+    $certName = Read-Host "Enter Certificate Name"
+    az keyvault certificate create --vault-name $vaultName --name $certName --policy $(az keyvault certificate get-default-policy)
+    Set-ConsoleColor $successColor
+    Write-Host "Certificate '$certName' created in Key Vault."
+    Set-ConsoleColor $defaultColor
+}
+
+# Summary
+Set-ConsoleColor $successColor
+Write-Host "`nAzure Key Vault setup and management complete!" -ForegroundColor $successColor
+Set-ConsoleColor $defaultColor
 
