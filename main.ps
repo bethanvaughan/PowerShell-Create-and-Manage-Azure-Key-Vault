@@ -17,14 +17,6 @@ Set-ConsoleColor $infoColor
 Write-Host "Welcome to the Azure Key Vault Management Script" -ForegroundColor $infoColor
 Set-ConsoleColor $defaultColor
 
-# Import Required Module
-if (-not (Get-Module -Name Az -ListAvailable)) {
-    Set-ConsoleColor $errorColor
-    Write-Host "The Az module is not installed. Please install it using 'Install-Module -Name Az'."
-    exit
-}
-Import-Module Az
-
 # Get Resource Group Information
 $resourceGroupName = Read-Host "Enter Resource Group Name (leave blank to create a new one)"
 if (-not $resourceGroupName) {
