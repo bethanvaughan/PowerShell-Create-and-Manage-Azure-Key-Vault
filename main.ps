@@ -84,3 +84,6 @@ if ($manageCertificate -eq "yes") {
 Set-ConsoleColor $successColor
 Write-Host "`nAzure Key Vault setup and management complete!" -ForegroundColor $successColor
 Set-ConsoleColor $defaultColor
+
+
+#Note: ([string]::IsNullOrEmpty instead of -not)
