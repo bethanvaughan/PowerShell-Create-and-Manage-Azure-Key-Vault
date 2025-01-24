@@ -17,28 +17,9 @@ Set-ConsoleColor $infoColor
 Write-Host "Welcome to the Azure Key Vault Management Script" -ForegroundColor $infoColor
 Set-ConsoleColor $defaultColor
 
-# Check if the Azure CLI is Logged In
-Set-ConsoleColor $infoColor
-Write-Host "Checking Azure login status..."
-Set-ConsoleColor $defaultColor
-if (-not (az account show -o none 2>$null)) {
-    Set-ConsoleColor $errorColor
-    Write-Host "You are not logged into Azure. Please log in using 'az login'."
-    exit
-}
-
-# Select Subscription
-Set-ConsoleColor $infoColor
-Write-Host "Fetching Azure Subscriptions..."
-Set-ConsoleColor $defaultColor
-$subscriptions = az account list --query "[].{Name:name, Id:id}" -o table
-Write-Host $subscriptions
-$subscriptionId = Read-Host "Enter the Subscription ID to use"
-az account set --subscription $subscriptionId
-
 # Get Resource Group Information
 $resourceGroupName = Read-Host "Enter Resource Group Name (leave blank to create a new one)"
-if ([string]::IsNullOrEmpty($resourceGroupName)) {
+if (-not ($resourceGroupName)) {
     Set-ConsoleColor $infoColor
     Write-Host "Creating a new Resource Group..." -ForegroundColor $infoColor
     Set-ConsoleColor $defaultColor
@@ -54,7 +35,7 @@ if ([string]::IsNullOrEmpty($resourceGroupName)) {
 
 # Create or Select Key Vault
 $vaultName = Read-Host "Enter Key Vault Name (leave blank to create a new one)"
-if ([string]::IsNullOrEmpty($vaultName)) {
+if (-not ($vaultName)) {
     $vaultName = Read-Host "Enter New Key Vault Name"
     az keyvault create --name $vaultName --resource-group $resourceGroupName --location $location
     Set-ConsoleColor $successColor
@@ -102,4 +83,6 @@ if ($manageCertificate -eq "yes") {
 Set-ConsoleColor $successColor
 Write-Host "`nAzure Key Vault setup and management complete!" -ForegroundColor $successColor
 Set-ConsoleColor $defaultColor
+
+#Note: can use [string]::IsNullOrEmpty instead of -not!
 
