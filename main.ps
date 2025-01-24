@@ -24,7 +24,7 @@ if (-not $resourceGroupName) {
     Write-Host "Creating a new Resource Group..." -ForegroundColor $infoColor
     Set-ConsoleColor $defaultColor
     $resourceGroupName = Read-Host "Enter New Resource Group Name"
-    $location = Read-Host "Enter Azure Location (e.g., eastus)"
+    $location = Read-Host "Enter Azure Location (e.g., uksouth)"
     New-AzResourceGroup -Name $resourceGroupName -Location $location | Out-Null
     Set-ConsoleColor $successColor
     Write-Host "Resource Group '$resourceGroupName' created successfully."
